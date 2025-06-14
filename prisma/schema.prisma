@@ -1,0 +1,205 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// --------- ENUMS (AUSWAHLLISTEN) ---------
+
+enum ProjectStatus {
+  AKQUISE
+  IN_BEARBEITUNG
+  PAUSE
+  FERTIGGESTELLT
+  ABGERECHNET
+  ARCHIVIERT
+}
+
+enum ProjectType {
+  NEUBAU
+  UMBAU
+  ZUBAU
+  GUTACHTEN
+  STUDIE
+  KONZEPT
+  WETTBEWERB
+  BERATUNG
+}
+
+enum ProjectSector {
+  OEFFENTLICH
+  PRIVAT
+  GEWERBLICH
+  HOTEL_GASTRO
+  BILDUNG_KULTUR
+}
+
+enum ContactCategory {
+  AUSFUEHRENDE_FIRMA
+  PLANER
+  AUFTRAGGEBER
+  BEHOERDE
+  VERTRETER
+  SONSTIGER
+}
+
+// --------- KERN-MODELLE ---------
+
+model Project {
+  id                  String   @id @default(cuid())
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+  projectNumber       String   @unique
+  name                String
+  status              ProjectStatus
+  budget              Decimal?
+  description         String?  @db.Text
+  projectType         ProjectType?
+  projectSector       ProjectSector?
+  parcelNumber        String?
+  plotAddress         String?
+  plotArea            Decimal?
+  cadastralCommunity  String?
+  registrationNumber  String?
+  zoning              String?
+  plotNotes           String?  @db.Text
+
+  notes       ProjectNote[]
+  timeEntries TimeEntry[]
+  metadata    ProjectMetadata[]
+  documents   ProjectDocument[]
+  assignments ProjectAssignment[]
+}
+
+model ContactGroup {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  name      String
+  category  ContactCategory
+  website   String?
+
+  persons     Person[]
+  addresses   Address[]
+  metadata    ContactGroupMetadata[]
+  assignments ProjectAssignment[]
+}
+
+model Person {
+  id           String   @id @default(cuid())
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  titlePrefix  String?
+  firstName    String
+  lastName     String
+  titleSuffix  String?
+
+  contactGroupId String
+  contactGroup   ContactGroup @relation(fields: [contactGroupId], references: [id])
+
+  emails EmailAddress[]
+  phones PhoneNumber[]
+}
+
+
+// --------- HILFS- & VERKNÜPFUNGS-MODELLE ---------
+
+model ProjectAssignment {
+  id             String   @id @default(cuid())
+  createdAt      DateTime @default(now())
+  role           String // z.B. "Auftraggeber", "Statiker"
+
+  projectId String
+  project   Project @relation(fields: [projectId], references: [id])
+
+  contactGroupId String
+  contactGroup   ContactGroup @relation(fields: [contactGroupId], references: [id])
+
+  @@unique([projectId, contactGroupId, role])
+}
+
+model ProjectNote {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  content   String   @db.Text
+
+  projectId String
+  project   Project @relation(fields: [projectId], references: [id])
+}
+
+model TimeEntry {
+  id          String   @id @default(cuid())
+  createdAt   DateTime @default(now())
+  startTime   DateTime
+  endTime     DateTime
+  description String
+
+  projectId String
+  project   Project @relation(fields: [projectId], references: [id])
+}
+
+model ProjectMetadata {
+  id    String @id @default(cuid())
+  key   String
+  value String @db.Text
+
+  projectId String
+  project   Project @relation(fields: [projectId], references: [id])
+}
+
+model ProjectDocument {
+  id         String   @id @default(cuid())
+  createdAt  DateTime @default(now())
+  documentType String   // Später eventuell Enum: VERTRAG, ANGEBOT, etc.
+  filePath   String
+  version    Int      @default(1)
+
+  projectId String
+  project   Project @relation(fields: [projectId], references: [id])
+}
+
+model Address {
+  id           String @id @default(cuid())
+  street       String?
+  houseNumber  String?
+  postalCode   String?
+  city         String?
+  country      String?
+  label        String? // z.B. "Rechnungsadresse", "Lieferadresse"
+
+  contactGroupId String
+  contactGroup   ContactGroup @relation(fields: [contactGroupId], references: [id])
+}
+
+model EmailAddress {
+  id    String @id @default(cuid())
+  email String @unique
+  label String? // z.B. "Privat", "Büro"
+
+  personId String
+  person   Person @relation(fields: [personId], references: [id])
+}
+
+model PhoneNumber {
+  id    String @id @default(cuid())
+  phone String
+  label String? // z.B. "Mobil", "Festnetz"
+
+  personId String
+  person   Person @relation(fields: [personId], references: [id])
+}
+
+model ContactGroupMetadata {
+  id    String @id @default(cuid())
+  key   String
+  value String @db.Text
+
+  contactGroupId String
+  contactGroup   ContactGroup @relation(fields: [contactGroupId], references: [id])
+}
