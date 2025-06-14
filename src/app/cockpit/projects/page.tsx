@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 
 export default function ProjectsPage() {
   const [projects, setProjects] = useState<any[]>([]);
@@ -24,16 +25,25 @@ export default function ProjectsPage() {
 
   return (
     <main className="p-8">
-      <h1 className="text-3xl font-bold mb-6">Projektübersicht</h1>
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-3xl font-bold">Projektübersicht</h1>
+        <Link
+          href="/cockpit/projects/new"
+          className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
+        >
+          Neues Projekt
+        </Link>
+      </div>
       
       {isLoading ? (
         <p>Lade Projekte...</p>
       ) : (
         <div>
           {projects.map((project) => (
-            <div
+            <Link
               key={project.id}
-              className="p-4 border rounded-md mb-2"
+              href={`/cockpit/projects/${project.id}`}
+              className="block p-4 border rounded-md mb-2 hover:bg-gray-50 transition-colors"
             >
               <div className="font-semibold">
                 {project.projectNumber} - {project.name}
@@ -41,7 +51,7 @@ export default function ProjectsPage() {
               <div className="text-sm text-gray-600">
                 Status: {project.status}
               </div>
-            </div>
+            </Link>
           ))}
           {projects.length === 0 && (
             <p className="text-gray-500">Keine Projekte vorhanden.</p>
