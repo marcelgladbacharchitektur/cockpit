@@ -1,0 +1,48 @@
+# Architekten-Cockpit Services Configuration
+
+# Main Application
+cockpit.marcelgladbach.at {
+    reverse_proxy localhost:3000
+    
+    # Security headers
+    header {
+        X-Content-Type-Options nosniff
+        X-Frame-Options DENY
+        X-XSS-Protection "1; mode=block"
+        Referrer-Policy strict-origin-when-cross-origin
+    }
+}
+
+# Nextcloud
+cloud.marcelgladbach.at {
+    reverse_proxy localhost:8080 {
+        header_up Host {host}
+        header_up X-Real-IP {remote}
+        header_up X-Forwarded-For {remote}
+        header_up X-Forwarded-Proto {scheme}
+    }
+    
+    # Nextcloud specific settings
+    redir /.well-known/carddav /remote.php/dav 301
+    redir /.well-known/caldav /remote.php/dav 301
+}
+
+# Umami Analytics
+analytics.marcelgladbach.at {
+    reverse_proxy localhost:3001
+    
+    # Umami specific headers
+    header {
+        X-Frame-Options SAMEORIGIN
+    }
+}
+
+# Optional: Uptime Monitoring
+status.marcelgladbach.at {
+    reverse_proxy localhost:3002
+    
+    # Basic authentication (optional)
+    # basicauth {
+    #     admin $2a$14$... # Generate with: caddy hash-password
+    # }
+}
