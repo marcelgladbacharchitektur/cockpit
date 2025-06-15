@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import toast from 'react-hot-toast';
 
 export default function NewProjectPage() {
   const router = useRouter();
@@ -42,21 +43,26 @@ export default function NewProjectPage() {
       });
 
       if (response.ok) {
+        toast.success('Projekt erfolgreich erstellt');
         router.push('/cockpit/projects');
       } else {
         const errorData = await response.json();
-        setError(errorData.error || 'Fehler beim Erstellen des Projekts');
+        const errorMessage = errorData.error || 'Fehler beim Erstellen des Projekts';
+        setError(errorMessage);
+        toast.error(errorMessage);
       }
     } catch (error) {
       console.error('Error creating project:', error);
-      setError('Netzwerkfehler beim Erstellen des Projekts');
+      const errorMessage = 'Netzwerkfehler beim Erstellen des Projekts';
+      setError(errorMessage);
+      toast.error(errorMessage);
     } finally {
       setIsSubmitting(false);
     }
   };
 
   return (
-    <main className="p-8">
+    <div>
       <h1 className="text-3xl font-bold mb-6">Neues Projekt anlegen</h1>
       
       <form onSubmit={handleSubmit} className="max-w-lg">
@@ -140,6 +146,6 @@ export default function NewProjectPage() {
           {isSubmitting ? 'Wird angelegt...' : 'Projekt anlegen'}
         </button>
       </form>
-    </main>
+    </div>
   );
 }

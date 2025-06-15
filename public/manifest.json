@@ -1,0 +1,41 @@
+{
+  "name": "Architekten-Cockpit",
+  "short_name": "Cockpit",
+  "description": "Ihr digitales Architekturbüro von Marcel Gladbach",
+  "start_url": "/cockpit",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#0a0a0a",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-192.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml"
+    }
+  ],
+  "categories": ["business", "productivity"],
+  "lang": "de-DE",
+  "shortcuts": [
+    {
+      "name": "Neues Projekt",
+      "short_name": "Projekt",
+      "description": "Ein neues Projekt erstellen",
+      "url": "/cockpit/projects/new",
+      "icons": [{ "src": "/icon.svg", "sizes": "192x192" }]
+    },
+    {
+      "name": "Neuer Kontakt",
+      "short_name": "Kontakt",
+      "description": "Einen neuen Kontakt erstellen",
+      "url": "/cockpit/contacts/new",
+      "icons": [{ "src": "/icon.svg", "sizes": "192x192" }]
+    }
+  ]
+}

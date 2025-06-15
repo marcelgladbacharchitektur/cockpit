@@ -49,6 +49,17 @@ enum ContactCategory {
   SONSTIGER
 }
 
+enum DocumentType {
+  VERTRAG
+  ANGEBOT
+  RECHNUNG
+  PLAN
+  GUTACHTEN
+  PROTOKOLL
+  KORRESPONDENZ
+  SONSTIGES
+}
+
 // --------- KERN-MODELLE ---------
 
 model Project {
@@ -70,11 +81,12 @@ model Project {
   zoning              String?
   plotNotes           String?  @db.Text
 
-  notes       ProjectNote[]
-  timeEntries TimeEntry[]
-  metadata    ProjectMetadata[]
-  documents   ProjectDocument[]
-  assignments ProjectAssignment[]
+  notes        ProjectNote[]
+  timeEntries  TimeEntry[]
+  metadata     ProjectMetadata[]
+  documents    ProjectDocument[]
+  assignments  ProjectAssignment[]
+  trackedPlans TrackedPlan[]
 }
 
 model ContactGroup {
@@ -154,14 +166,17 @@ model ProjectMetadata {
 }
 
 model ProjectDocument {
-  id         String   @id @default(cuid())
-  createdAt  DateTime @default(now())
-  documentType String   // Später eventuell Enum: VERTRAG, ANGEBOT, etc.
-  filePath   String
-  version    Int      @default(1)
+  id           String       @id @default(cuid())
+  createdAt    DateTime     @default(now())
+  documentType DocumentType
+  fileName     String
+  filePath     String
+  fileSize     Int
+  description  String?      @db.Text
+  version      Int          @default(1)
 
   projectId String
-  project   Project @relation(fields: [projectId], references: [id])
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
 }
 
 model Address {
@@ -202,4 +217,30 @@ model ContactGroupMetadata {
 
   contactGroupId String
   contactGroup   ContactGroup @relation(fields: [contactGroupId], references: [id])
+}
+
+model TrackedPlan {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  title     String // z.B. "Grundriss Erdgeschoss", "Schnitt A-A"
+  
+  projectId String
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  versions PlanVersion[] // Ein Plantyp hat viele Versionen
+}
+
+model PlanVersion {
+  id        String   @id @default(cuid()) // Diese ID kommt in den QR-Code!
+  createdAt DateTime @default(now())
+
+  versionNumber Int    // z.B. 1, 2, 3...
+  description   String? @db.Text // Notizen zu dieser Version
+
+  filePath      String // Der Pfad zur PDF-Datei in Nextcloud
+  
+  trackedPlanId String
+  trackedPlan   TrackedPlan @relation(fields: [trackedPlanId], references: [id], onDelete: Cascade)
 }

@@ -12,18 +12,23 @@ const createProjectSchema = z.object({
   plotArea: z.number().positive().optional(),
 });
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
+    const { searchParams } = new URL(request.url);
+    const limit = searchParams.get('limit');
+    
     const projects = await prisma.project.findMany({
       select: {
         id: true,
         projectNumber: true,
         name: true,
         status: true,
+        createdAt: true,
       },
       orderBy: {
         createdAt: 'desc',
       },
+      ...(limit && { take: parseInt(limit) }),
     });
 
     return NextResponse.json(projects, { status: 200 });
